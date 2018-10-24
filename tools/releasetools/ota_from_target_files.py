@@ -160,6 +160,9 @@ Usage:  ota_from_target_files [flags] input_target_files output_ota_package
   --backup <boolean>
       Enable or disable the execution of backuptool.sh.
       Disabled by default.
+
+  --brotli <boolean>
+     Enable (default) or disable usage of brotli
 """
 
 from __future__ import print_function
@@ -212,6 +215,8 @@ OPTIONS.extracted_input = None
 OPTIONS.key_passwords = []
 OPTIONS.skip_postinstall = False
 OPTIONS.backuptool = True
+
+OPTIONS.brotli = True
 
 METADATA_NAME = 'META-INF/com/android/metadata'
 POSTINSTALL_CONFIG = 'META/postinstall_config.txt'
@@ -865,7 +870,7 @@ else if get_stage("%(bcb_dev)s") == "3/3" then
   system_tgt = common.GetSparseImage("system", OPTIONS.input_tmp, input_zip,
                                      allow_shared_blocks)
   system_tgt.ResetFileMap()
-  system_diff = common.BlockDifference("system", system_tgt, src=None)
+  system_diff = common.BlockDifference("system", system_tgt, src=None, brotli=OPTIONS.brotli)
   system_diff.WriteScript(script, output_zip)
 
   boot_img = common.GetBootableImage(
@@ -877,7 +882,7 @@ else if get_stage("%(bcb_dev)s") == "3/3" then
     vendor_tgt = common.GetSparseImage("vendor", OPTIONS.input_tmp, input_zip,
                                        allow_shared_blocks)
     vendor_tgt.ResetFileMap()
-    vendor_diff = common.BlockDifference("vendor", vendor_tgt)
+    vendor_diff = common.BlockDifference("vendor", vendor_tgt, brotli=OPTIONS.brotli)
     vendor_diff.WriteScript(script, output_zip)
 
   AddCompatibilityArchiveIfTrebleEnabled(input_zip, output_zip, target_info)
@@ -1446,7 +1451,8 @@ def WriteBlockIncrementalOTAPackage(target_zip, source_zip, output_file):
   system_diff = common.BlockDifference("system", system_tgt, system_src,
                                        check_first_block,
                                        version=blockimgdiff_version,
-                                       disable_imgdiff=disable_imgdiff)
+                                       disable_imgdiff=disable_imgdiff,
+                                       brotli=OPTIONS.brotli)
 
   if HasVendorPartition(target_zip):
     if not HasVendorPartition(source_zip):
@@ -1464,7 +1470,8 @@ def WriteBlockIncrementalOTAPackage(target_zip, source_zip, output_file):
     vendor_diff = common.BlockDifference("vendor", vendor_tgt, vendor_src,
                                          check_first_block,
                                          version=blockimgdiff_version,
-                                         disable_imgdiff=disable_imgdiff)
+                                         disable_imgdiff=disable_imgdiff,
+                                         brotli=OPTIONS.brotli)
   else:
     vendor_diff = None
 
@@ -1863,6 +1870,8 @@ def main(argv):
       OPTIONS.verify = True
     elif o == "--block":
       OPTIONS.block_based = True
+    elif o in ("--brotli"):
+      OPTIONS.brotli = bool(a.lower() == 'true')
     elif o in ("-b", "--binary"):
       OPTIONS.updater_binary = a
     elif o == "--stash_threshold":
@@ -1901,6 +1910,7 @@ def main(argv):
                                  "include_secondary",
                                  "no_signing",
                                  "block",
+                                 "brotli=",
                                  "binary=",
                                  "oem_settings=",
                                  "oem_no_mount",
