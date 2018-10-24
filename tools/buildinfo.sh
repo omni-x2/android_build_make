@@ -32,6 +32,9 @@ echo "ro.product.brand=$PRODUCT_BRAND"
 echo "ro.product.name=$PRODUCT_NAME"
 echo "ro.product.device=$TARGET_DEVICE"
 
+echo "ro.opendelta.device=${TARGET_DEVICE#*_}"
+echo "ro.opendelta.version=P-${TARGET_DEVICE#*_}-$(date +"%Y%m%d")"
+
 # These values are deprecated, use "ro.product.cpu.abilist"
 # instead (see below).
 echo "# ro.product.cpu.abi and ro.product.cpu.abi2 are obsolete,"
