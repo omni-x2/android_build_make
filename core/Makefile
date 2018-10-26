@@ -2883,8 +2883,9 @@ name := $(TARGET_PRODUCT)
 ifeq ($(TARGET_BUILD_TYPE),debug)
   name := $(name)_debug
 endif
-name := Nitrogen-OS-P-$(TARGET_DEVICE)-$(shell date +"%Y%m%d")
-
+build_date_time := $(shell date +"%Y%m%d-%H%M")
+huy := $(shell echo $(build_date_time) > $(PRODUCT_OUT)/build_date_time.txt)
+name := Nitrogen-OS-P-$(TARGET_DEVICE)-$(build_date_time)
 INTERNAL_OTA_PACKAGE_TARGET := $(PRODUCT_OUT)/$(name).zip
 
 $(INTERNAL_OTA_PACKAGE_TARGET): KEY_CERT_PAIR := $(DEFAULT_KEY_CERT_PAIR)
