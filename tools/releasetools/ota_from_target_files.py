@@ -163,6 +163,9 @@ Usage:  ota_from_target_files [flags] input_target_files output_ota_package
 
   --brotli <boolean>
      Enable (default) or disable usage of brotli
+
+  --override_device <device>
+      Override device-specific asserts. Can be a comma-separated list.
 """
 
 from __future__ import print_function
@@ -215,6 +218,7 @@ OPTIONS.extracted_input = None
 OPTIONS.key_passwords = []
 OPTIONS.skip_postinstall = False
 OPTIONS.backuptool = True
+OPTIONS.override_device = 'auto'
 
 OPTIONS.brotli = True
 
@@ -274,7 +278,10 @@ class BuildInfo(object):
       assert oem_dicts, "OEM source required for this build"
 
     # These two should be computed only after setting self._oem_props.
-    self._device = self.GetOemProperty("ro.product.device")
+    if OPTIONS.override_device == "auto":
+      self._device = self.GetOemProperty("ro.product.device")
+    else:
+      self._device = OPTIONS.override_device
     self._fingerprint = self.CalculateFingerprint()
 
   @property
@@ -767,8 +774,8 @@ def WriteFullOTAPackage(input_zip, output_file):
   #ts_text = target_info.GetBuildProp("ro.build.date")
   #script.AssertOlderBuild(ts, ts_text)
 
-  #target_info.WriteDeviceAssertions(script, OPTIONS.oem_no_mount)
-  #device_specific.FullOTA_Assertions()
+  target_info.WriteDeviceAssertions(script, OPTIONS.oem_no_mount)
+  device_specific.FullOTA_Assertions()
 
   # Two-step package strategy (in chronological order, which is *not*
   # the order in which the generated script has things):
@@ -1890,6 +1897,8 @@ def main(argv):
       OPTIONS.extracted_input = a
     elif o == "--skip_postinstall":
       OPTIONS.skip_postinstall = True
+    elif o in ("--override_device"):
+      OPTIONS.override_device = a
     else:
       return False
     return True
@@ -1921,6 +1930,7 @@ def main(argv):
                                  "payload_signer_args=",
                                  "extracted_input_target_files=",
                                  "skip_postinstall",
+                                 "override_device=",
                              ], extra_option_handler=option_handler)
 
   if len(args) != 2:
@@ -1963,6 +1973,9 @@ def main(argv):
 
   # Load OEM dicts if provided.
   OPTIONS.oem_dicts = _LoadOemDicts(OPTIONS.oem_source)
+
+  if "ota_override_device" in OPTIONS.info_dict:
+    OPTIONS.override_device = OPTIONS.info_dict.get("ota_override_device")
 
   ab_update = OPTIONS.info_dict.get("ab_update") == "true"
 
