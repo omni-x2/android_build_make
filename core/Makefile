@@ -2904,7 +2904,7 @@ endif
     $(INTERNAL_OTA_PACKAGE_TARGET): brotli := true
 else
     $(INTERNAL_OTA_PACKAGE_TARGET): brotli := false
-
+endif
 ifeq ($(TARGET_OTA_ASSERT_DEVICE),)
     OTA_SCRIPT_OVERRIDE_DEVICE := auto
 else
