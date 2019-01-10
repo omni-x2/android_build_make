@@ -34,6 +34,9 @@ echo "ro.product.device=$TARGET_DEVICE"
 echo "ro.opendelta.device=${TARGET_DEVICE#*_}"
 echo "ro.opendelta.version=P-${TARGET_DEVICE#*_}-$(cat $OUT_DIR/target/product/${TARGET_DEVICE#*_}/build_date_time.txt)"
 
+echo "ro.nitrogen.device=$TARGET_DEVICE"
+echo "org.nitrogen.version=Nitrogen-OS-P-$TARGET_DEVICE-$(date +"%Y%m%d")"
+
 # These values are deprecated, use "ro.product.cpu.abilist"
 # instead (see below).
 echo "# ro.product.cpu.abi and ro.product.cpu.abi2 are obsolete,"
